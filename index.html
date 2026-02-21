@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Music Events Replay Heatmap</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="./main.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="title">
+          <h1>Music Events Replay Heatmap</h1>
+        </div>
+
+        <div class="controls">
+          <button id="playBtn" class="btn">Play</button>
+          <button id="pauseBtn" class="btn" disabled>Pause</button>
+
+          <div class="speed">
+            <label for="speed">Speed</label>
+            <select id="speed">
+              <option value="1200">Slow</option>
+              <option value="700" selected>Normal</option>
+              <option value="300">Fast</option>
+              <option value="10">Very Fast</option>
+            </select>
+          </div>
+
+          <div class="heatToggle">
+            <label class="toggle">
+              <input type="checkbox" id="heatToggle" />
+              Heatmap
+            </label>
+          </div>
+
+          <div class="monthReadout">
+            <div class="label">Month</div>
+            <div id="monthLabel" class="value">—</div>
+            <div id="countLabel" class="count">0 events</div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="mapWrap">
+          <div id="map"></div>
+          <div id="tooltip" class="tooltip" aria-hidden="true"></div>
+        </section>
+
+        <aside class="side">
+          <div class="panel">
+            <div class="panelTitle">Timeline</div>
+
+            <input
+              id="monthSlider"
+              type="range"
+              min="0"
+              max="0"
+              value="0"
+              step="1"
+            />
+
+            <div class="sliderMeta">
+              <div id="rangeStart">—</div>
+              <div id="rangeEnd">—</div>
+            </div>
+
+            <div class="miniChartWrap">
+              <svg
+                id="miniChart"
+                width="100%"
+                height="90"
+                viewBox="0 0 600 90"
+                preserveAspectRatio="none"
+              ></svg>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panelTitle">Events</div>
+            <div id="eventList" class="eventList">
+              <div class="muted">No month selected yet.</div>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+    <script src="./main.js"></script>
+  </body>
+</html>

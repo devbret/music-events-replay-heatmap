@@ -1,0 +1,4 @@
+.vscode/
+venv/
+event.json
+events_timeline.json

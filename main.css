@@ -1,0 +1,293 @@
+:root {
+  --bg: #0b0f14;
+  --panel: #121826;
+  --panel2: #0f1522;
+  --text: #e7eefc;
+  --muted: #a7b4ce;
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --accent: #67e8f9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.title h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.3px;
+}
+.subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.speed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.speed label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.speed select {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.monthReadout {
+  min-width: 140px;
+  text-align: right;
+}
+.monthReadout .label {
+  color: var(--muted);
+  font-size: 11px;
+}
+.monthReadout .value {
+  font-size: 14px;
+  font-weight: 650;
+  margin-top: 2px;
+}
+.monthReadout .count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  min-height: 0;
+}
+
+.mapWrap {
+  position: relative;
+  min-height: 0;
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+.side {
+  border-left: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+  overflow: auto;
+}
+
+.panel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 30px var(--shadow);
+  margin-bottom: 12px;
+}
+
+.panelTitle {
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+
+#monthSlider {
+  width: 100%;
+}
+
+.sliderMeta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.miniChartWrap {
+  margin-top: 12px;
+}
+.miniHint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 600px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.eventCard {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  padding: 10px;
+}
+.eventCard .name {
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 4px;
+}
+.eventCard .meta {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 11px;
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 12px;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(15, 20, 32, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 10px 10px;
+  box-shadow: 0 12px 30px var(--shadow);
+  opacity: 0;
+  transform: translate(0, 0);
+  transition: opacity 80ms linear;
+  max-width: 280px;
+}
+
+.tooltip .tname {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.tooltip .tmeta {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.25;
+}
+
+.leaflet-overlay-pane svg {
+  overflow: visible;
+}
+
+.eventDot {
+  fill: black;
+  fill-opacity: 0.65;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 1;
+}
+.eventDot:hover {
+  fill-opacity: 0.95;
+  stroke: rgba(255, 255, 255, 0.7);
+}
+
+.miniBar {
+  fill: rgba(255, 255, 255, 0.12);
+}
+.miniBar.active {
+  fill: rgba(103, 232, 249, 0.5);
+}
+.miniAxisText {
+  fill: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.toggle input[type="checkbox"] {
+  transform: translateY(1px);
+}
