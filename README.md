@@ -10,4 +10,4 @@ Loads a month-by-month timeline of geocoded music events from `events_timeline.j
 
 ## Data Source
 
-Here is a link to [the MusicBrainz data source](https://metabrainz.org/datasets/postgres-dumps#musicbrainz) used for building this application
+Here is a link to [the MusicBrainz data source](https://metabrainz.org/datasets/postgres-dumps) used for building this application
