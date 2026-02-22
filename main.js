@@ -1,16 +1,23 @@
-/* global d3, L */
-
 const DATA_URL = "./events_timeline.json";
+
+const OPENING_CENTER = [20, 0];
+const OPENING_ZOOM = 3;
 
 const map = L.map("map", {
   zoomControl: true,
   preferCanvas: false,
-}).setView([20, 0], 2);
+}).setView(OPENING_CENTER, OPENING_ZOOM);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 19,
-  attribution: "&copy; OpenStreetMap contributors",
-}).addTo(map);
+L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{z}/{z}.png".replace(
+    /{z}\/{z}\/{z}/,
+    "{z}/{x}/{y}",
+  ),
+  {
+    maxZoom: 19,
+    attribution: "&copy; OpenStreetMap contributors",
+  },
+).addTo(map);
 
 L.svg().addTo(map);
 const overlay = d3.select(map.getPanes().overlayPane).select("svg");
@@ -79,9 +86,7 @@ function showTooltip(evt, d) {
       <div><b>Date:</b> ${escapeHtml(d.date || "")}</div>
       <div><b>Venue:</b> ${escapeHtml(venue)}</div>
       <div><b>Area:</b> ${escapeHtml(city)}, ${escapeHtml(country)}</div>
-      <div><b>Coords:</b> ${Number(d.lat).toFixed(5)}, ${Number(d.lng).toFixed(
-        5,
-      )}</div>
+      <div><b>Coords:</b> ${Number(d.lat).toFixed(5)}, ${Number(d.lng).toFixed(5)}</div>
     </div>
   `;
 
@@ -111,9 +116,7 @@ function escapeHtml(s) {
 
 function renderTypeBadge(type) {
   const color = typeColors.get(type) || "#d9d9d9";
-  return `<span class="badge" style="border-color:${color}; color:${color};">${escapeHtml(
-    type,
-  )}</span>`;
+  return `<span class="badge" style="border-color:${color}; color:${color};">${escapeHtml(type)}</span>`;
 }
 
 function renderEventList(events) {
@@ -164,13 +167,7 @@ let heatLayer = null;
 
 function ensureHeatLayer() {
   if (heatLayer) return heatLayer;
-
-  if (!L.heatLayer) {
-    console.warn(
-      "Leaflet.heat is not loaded. Include leaflet-heat.js to enable heatmap mode.",
-    );
-    return null;
-  }
+  if (!L.heatLayer) return null;
 
   heatLayer = L.heatLayer([], {
     radius: 38,
@@ -232,9 +229,7 @@ function updateOverlayForMonth(idx) {
   const { month, events } = frame;
 
   monthLabel.textContent = month;
-  countLabel.textContent = `${events.length} event${
-    events.length === 1 ? "" : "s"
-  }`;
+  countLabel.textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
   monthSlider.value = String(monthIndex);
 
   renderEventList(events);
@@ -315,8 +310,8 @@ const miniSvg = d3.select("#miniChart");
 let miniData = [];
 
 function renderMiniChart() {
-  const W = 600,
-    H = 90;
+  const W = 600;
+  const H = 90;
   const pad = { l: 8, r: 8, t: 10, b: 18 };
 
   miniSvg.selectAll("*").remove();
@@ -408,21 +403,19 @@ async function init() {
     month: d.month,
     count: (d.events || []).length,
   }));
+
   renderMiniChart();
 
   const firstWithEvents = Math.max(
     0,
     timeline.findIndex((d) => (d.events || []).length > 0),
   );
+
   monthIndex = firstWithEvents === -1 ? 0 : firstWithEvents;
 
   updateOverlayForMonth(monthIndex);
 
-  const startEvents = timeline[monthIndex].events || [];
-  if (startEvents.length > 0) {
-    const bounds = L.latLngBounds(startEvents.map((e) => [e.lat, e.lng]));
-    map.fitBounds(bounds.pad(0.2));
-  }
+  map.setView(OPENING_CENTER, OPENING_ZOOM, { animate: false });
 
   repositionOverlay();
 
