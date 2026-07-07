@@ -35,7 +35,7 @@
               <option value="1200">Slow</option>
               <option value="700" selected>Normal</option>
               <option value="300">Fast</option>
-              <option value="10">Very Fast</option>
+              <option value="5">Very Fast</option>
             </select>
           </div>
 
@@ -44,12 +44,10 @@
               <input type="checkbox" id="heatToggle" />
               Heatmap
             </label>
-          </div>
-
-          <div class="monthReadout">
-            <div class="label">Month</div>
-            <div id="monthLabel" class="value">—</div>
-            <div id="countLabel" class="count">0 events</div>
+            <label class="toggle">
+              <input type="checkbox" id="trailToggle" checked />
+              Trail
+            </label>
           </div>
         </div>
       </header>
@@ -58,9 +56,35 @@
         <section class="mapWrap">
           <div id="map"></div>
           <div id="tooltip" class="tooltip" aria-hidden="true"></div>
+
+          <div id="heatLegend" class="heatLegend" hidden>
+            <div class="legendTitle">Event density</div>
+            <div class="legendBar"></div>
+            <div class="legendLabels">
+              <span>fewer</span>
+              <span>more</span>
+            </div>
+            <div id="legendNote" class="legendNote"></div>
+          </div>
         </section>
 
         <aside class="side">
+          <div class="panel">
+            <div class="panelTitle">Currently Viewing</div>
+            <div id="yearLabel" class="statYear">-</div>
+            <div id="monthLabel" class="statMonthName">-</div>
+            <div class="statsRow">
+              <div class="stat">
+                <div id="countLabel" class="statValue">0</div>
+                <div class="statLabel">Events this month</div>
+              </div>
+              <div class="stat">
+                <div id="positionLabel" class="statValue">-</div>
+                <div class="statLabel">Timeline position</div>
+              </div>
+            </div>
+          </div>
+
           <div class="panel">
             <div class="panelTitle">Timeline</div>
 
@@ -74,8 +98,8 @@
             />
 
             <div class="sliderMeta">
-              <div id="rangeStart">—</div>
-              <div id="rangeEnd">—</div>
+              <div id="rangeStart">-</div>
+              <div id="rangeEnd">-</div>
             </div>
 
             <div class="miniChartWrap">

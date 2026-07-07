@@ -8,16 +8,12 @@ const map = L.map("map", {
   preferCanvas: false,
 }).setView(OPENING_CENTER, OPENING_ZOOM);
 
-L.tileLayer(
-  "https://{s}.tile.openstreetmap.org/{z}/{z}/{z}.png".replace(
-    /{z}\/{z}\/{z}/,
-    "{z}/{x}/{y}",
-  ),
-  {
-    maxZoom: 19,
-    attribution: "&copy; OpenStreetMap contributors",
-  },
-).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  maxZoom: 20,
+  subdomains: "abcd",
+  attribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+}).addTo(map);
 
 L.svg().addTo(map);
 const overlay = d3.select(map.getPanes().overlayPane).select("svg");
@@ -28,8 +24,10 @@ const pauseBtn = document.getElementById("pauseBtn");
 const speedSelect = document.getElementById("speed");
 
 const monthSlider = document.getElementById("monthSlider");
+const yearLabel = document.getElementById("yearLabel");
 const monthLabel = document.getElementById("monthLabel");
 const countLabel = document.getElementById("countLabel");
+const positionLabel = document.getElementById("positionLabel");
 
 const rangeStart = document.getElementById("rangeStart");
 const rangeEnd = document.getElementById("rangeEnd");
@@ -37,6 +35,9 @@ const eventList = document.getElementById("eventList");
 const tooltip = document.getElementById("tooltip");
 
 const heatToggle = document.getElementById("heatToggle");
+const trailToggle = document.getElementById("trailToggle");
+const heatLegend = document.getElementById("heatLegend");
+const legendNote = document.getElementById("legendNote");
 
 let timer = null;
 let playbackMs = Number(speedSelect.value);
@@ -44,12 +45,26 @@ let playbackMs = Number(speedSelect.value);
 let timeline = [];
 let monthIndex = 0;
 
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 function classifyEventType(name) {
   const s = String(name || "").toLowerCase();
   if (s.includes("premiere") || s.includes("première")) return "premiere";
   if (s.includes("funeral")) return "funeral";
-  if (s.includes("stage performance") || s.includes("performance"))
-    return "performance";
+  if (s.includes("performance")) return "performance";
   return "other";
 }
 
@@ -165,6 +180,11 @@ map.on("zoom move viewreset", repositionOverlay);
 
 let heatLayer = null;
 
+const HEAT_TRAIL_MONTHS = 6;
+const HEAT_TRAIL_DECAY = 0.65;
+
+let heatMax = { single: 1, trail: 1 };
+
 function ensureHeatLayer() {
   if (heatLayer) return heatLayer;
   if (!L.heatLayer) return null;
@@ -172,19 +192,56 @@ function ensureHeatLayer() {
   heatLayer = L.heatLayer([], {
     radius: 38,
     blur: 24,
-    maxZoom: 6,
-    minOpacity: 0.55,
+    maxZoom: 4,
+    minOpacity: 0.3,
     gradient: {
-      0.1: "#1a4fff",
-      0.35: "#00d4ff",
-      0.55: "#00ff6a",
-      0.75: "#ffe600",
-      0.9: "#ff7a00",
-      1.0: "#ff0000",
+      0.08: "#57106e",
+      0.22: "#bc3754",
+      0.45: "#f98e09",
+      0.75: "#fcffa4",
     },
   });
 
   return heatLayer;
+}
+
+function isTrailOn() {
+  return !!(trailToggle && trailToggle.checked);
+}
+
+function heatPointsForMonth(idx, withTrail) {
+  const windowSize = withTrail ? HEAT_TRAIL_MONTHS : 1;
+  const pts = [];
+
+  for (let age = 0; age < windowSize; age++) {
+    const frame = timeline[idx - age];
+    if (!frame) break;
+
+    const weight = Math.pow(HEAT_TRAIL_DECAY, age);
+    for (const e of frame.events || []) {
+      if (Number.isFinite(e.lat) && Number.isFinite(e.lng)) {
+        pts.push([e.lat, e.lng, weight]);
+      }
+    }
+  }
+
+  return pts;
+}
+
+function computeHeatMax(withTrail) {
+  let maxDensity = 1;
+
+  for (let i = 0; i < timeline.length; i++) {
+    const buckets = new Map();
+    for (const p of heatPointsForMonth(i, withTrail)) {
+      const key = `${Math.round(p[0] * 2)},${Math.round(p[1] * 2)}`;
+      const sum = (buckets.get(key) || 0) + p[2];
+      buckets.set(key, sum);
+      if (sum > maxDensity) maxDensity = sum;
+    }
+  }
+
+  return maxDensity;
 }
 
 function setHeatMode(enabled) {
@@ -193,6 +250,9 @@ function setHeatMode(enabled) {
     if (heatToggle) heatToggle.checked = false;
     return;
   }
+
+  if (trailToggle) trailToggle.disabled = !enabled;
+  if (heatLegend) heatLegend.hidden = !enabled;
 
   if (enabled) {
     overlay.style("display", "none");
@@ -203,22 +263,20 @@ function setHeatMode(enabled) {
   }
 }
 
-function updateHeatForMonth(events) {
+function updateHeatLegend() {
+  if (!legendNote) return;
+  legendNote.textContent = isTrailOn()
+    ? `Weighted over the past ${HEAT_TRAIL_MONTHS} months`
+    : "Current month only";
+}
+
+function updateHeatForMonth(idx) {
   const hl = ensureHeatLayer();
   if (!hl) return;
 
-  const valid = (events || []).filter(
-    (e) => Number.isFinite(e.lat) && Number.isFinite(e.lng),
-  );
-
-  const n = valid.length;
-  const baseBoost = n < 10 ? 2.2 : n < 30 ? 1.6 : 1.2;
-  const pts = valid.map((e) => [e.lat, e.lng, 1 * baseBoost]);
-
-  hl.setLatLngs(pts);
-  hl.setOptions({
-    max: Math.max(6, Math.min(30, n)),
-  });
+  const withTrail = isTrailOn();
+  hl.setLatLngs(heatPointsForMonth(idx, withTrail));
+  hl.setOptions({ max: (withTrail ? heatMax.trail : heatMax.single) * 0.35 });
 }
 
 function updateOverlayForMonth(idx) {
@@ -226,17 +284,22 @@ function updateOverlayForMonth(idx) {
   const frame = timeline[monthIndex];
   if (!frame) return;
 
+  hideTooltip();
+
   const { month, events } = frame;
 
-  monthLabel.textContent = month;
-  countLabel.textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
+  const [yy, mm] = month.split("-");
+  yearLabel.textContent = String(Number(yy));
+  monthLabel.textContent = MONTH_NAMES[Number(mm) - 1] || month;
+  countLabel.textContent = String(events.length);
+  positionLabel.textContent = `${monthIndex + 1} of ${timeline.length}`;
   monthSlider.value = String(monthIndex);
 
   renderEventList(events);
 
   const heatOn = !!(heatToggle && heatToggle.checked);
   if (heatOn) {
-    updateHeatForMonth(events);
+    updateHeatForMonth(monthIndex);
     setMiniActive(monthIndex);
     return;
   }
@@ -289,6 +352,9 @@ function setPlaying(isPlaying) {
 
 function startPlayback() {
   if (timer) return;
+  if (monthIndex >= timeline.length - 1) {
+    updateOverlayForMonth(0);
+  }
   setPlaying(true);
   timer = setInterval(() => {
     const next = monthIndex + 1;
@@ -308,6 +374,7 @@ function stopPlayback() {
 
 const miniSvg = d3.select("#miniChart");
 let miniData = [];
+let miniX = null;
 
 function renderMiniChart() {
   const W = 600;
@@ -321,6 +388,8 @@ function renderMiniChart() {
     .domain(d3.range(miniData.length))
     .range([pad.l, W - pad.r])
     .paddingInner(0.1);
+
+  miniX = x;
 
   const y = d3
     .scaleLinear()
@@ -363,6 +432,12 @@ function renderMiniChart() {
       return mm === "01" ? yy : "";
     });
 
+  miniSvg
+    .append("line")
+    .attr("class", "miniCursor")
+    .attr("y1", pad.t)
+    .attr("y2", H - pad.b);
+
   setMiniActive(monthIndex);
 }
 
@@ -370,9 +445,17 @@ function setMiniActive(activeIdx) {
   miniSvg
     .selectAll("rect.miniBar")
     .classed("active", (_d, i) => i === activeIdx);
+
+  if (miniX) {
+    const cx = miniX(activeIdx) + miniX.bandwidth() / 2;
+    miniSvg.select("line.miniCursor").attr("x1", cx).attr("x2", cx);
+  }
 }
 
 async function init() {
+  monthLabel.textContent = "Loading…";
+  eventList.innerHTML = `<div class="muted">Loading timeline…</div>`;
+
   const res = await fetch(DATA_URL);
   if (!res.ok) throw new Error(`Failed to fetch ${DATA_URL}: ${res.status}`);
   const data = await res.json();
@@ -406,14 +489,10 @@ async function init() {
 
   renderMiniChart();
 
-  const firstWithEvents = Math.max(
-    0,
-    timeline.findIndex((d) => (d.events || []).length > 0),
-  );
+  heatMax.single = computeHeatMax(false);
+  heatMax.trail = computeHeatMax(true);
 
-  monthIndex = firstWithEvents === -1 ? 0 : firstWithEvents;
-
-  updateOverlayForMonth(monthIndex);
+  updateOverlayForMonth(0);
 
   map.setView(OPENING_CENTER, OPENING_ZOOM, { animate: false });
 
@@ -421,13 +500,23 @@ async function init() {
 
   if (heatToggle) {
     heatToggle.addEventListener("change", () => {
-      stopPlayback();
       setHeatMode(heatToggle.checked);
       updateOverlayForMonth(monthIndex);
     });
 
     setHeatMode(heatToggle.checked);
   }
+
+  if (trailToggle) {
+    trailToggle.addEventListener("change", () => {
+      updateHeatLegend();
+      if (heatToggle && heatToggle.checked) {
+        updateOverlayForMonth(monthIndex);
+      }
+    });
+  }
+
+  updateHeatLegend();
 }
 
 init().catch((err) => {

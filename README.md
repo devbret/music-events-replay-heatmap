@@ -1,6 +1,6 @@
 # Music Events Replay Heatmap
 
-![Screenshot from the frontend UI of this application, featuring a heatmap of activity layered over a world map.](https://hosting.photobucket.com/bbcfb0d4-be20-44a0-94dc-65bff8947cf2/dfb1ce1c-fc8c-450f-af8a-1f10f44b0fd3.png)
+![Screenshot from the frontend UI of this application, featuring a heatmap of activity layered over a world map.](https://hosting.photobucket.com/bbcfb0d4-be20-44a0-94dc-65bff8947cf2/42e3db9c-f1bd-48ad-b500-9ac2a38cc613.png)
 
 Visualize a timeline of music events on an interactive map with time scrubbing, markers, heatmap density and a mini bar chart for quickly navigating event volume.
 
