@@ -1,23 +1,19 @@
 import json
+import re
 from collections import defaultdict
-from datetime import datetime
 
 INPUT_FILE = "event.json"
 OUTPUT_FILE = "events_timeline.json"
+
+MONTH_RE = re.compile(r"^(\d{4}-(?:0[1-9]|1[0-2]))")
 
 
 def parse_month(date_str: str):
     if not date_str:
         return None
 
-    if len(date_str) >= 7 and date_str[4] == "-" and date_str[7:8] != "-":
-        return date_str[:7]
-
-    try:
-        dt = datetime.strptime(date_str[:10], "%Y-%m-%d")
-        return dt.strftime("%Y-%m")
-    except Exception:
-        return None
+    match = MONTH_RE.match(date_str)
+    return match.group(1) if match else None
 
 
 def find_held_at_place(event: dict):
@@ -46,7 +42,7 @@ def extract_lat_lng(place: dict):
     if lat is None or lng is None:
         return None, None
     try:
-        return float(lat), float(lng)
+        return round(float(lat), 5), round(float(lng), 5)
     except Exception:
         return None, None
 
@@ -73,7 +69,7 @@ def extract_city_country(place: dict):
 
 def iter_ndjson(path: str):
     with open(path, "r", encoding="utf-8") as f:
-        for i, line in enumerate(f, start=1):
+        for line in f:
             line = line.strip()
             if not line:
                 continue
@@ -144,7 +140,7 @@ def main():
     }
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2)
+        json.dump(output, f, separators=(",", ":"))
 
     print(f"Read lines: {total_read}")
     print(f"Processed events: {total_processed}")

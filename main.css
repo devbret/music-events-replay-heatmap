@@ -17,6 +17,7 @@ html,
 body {
   margin: 0;
   height: 100%;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family:
@@ -30,7 +31,8 @@ body {
 }
 
 .app {
-  height: 100%;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -104,21 +106,39 @@ body {
   padding: 6px 8px;
 }
 
-.monthReadout {
-  min-width: 140px;
-  text-align: right;
+.statYear {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.2px;
 }
-.monthReadout .label {
-  color: var(--muted);
-  font-size: 11px;
-}
-.monthReadout .value {
-  font-size: 14px;
+
+.statMonthName {
+  font-size: 16px;
   font-weight: 650;
-  margin-top: 2px;
+  color: var(--accent);
+  margin: 2px 0 12px;
 }
-.monthReadout .count {
-  font-size: 12px;
+
+.statsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.stat {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+.stat .statValue {
+  font-size: 18px;
+  font-weight: 650;
+}
+.stat .statLabel {
+  margin-top: 2px;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -258,19 +278,25 @@ body {
   overflow: visible;
 }
 
+.leaflet-heatmap-layer {
+  opacity: 0.65;
+}
+
 .eventDot {
-  fill: black;
-  fill-opacity: 0.65;
-  stroke: rgba(255, 255, 255, 0.35);
+  fill-opacity: 0.75;
   stroke-width: 1;
 }
 .eventDot:hover {
-  fill-opacity: 0.95;
-  stroke: rgba(255, 255, 255, 0.7);
+  fill-opacity: 1;
 }
 
 .miniBar {
   fill: rgba(255, 255, 255, 0.12);
+}
+.miniCursor {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
 .miniBar.active {
   fill: rgba(103, 232, 249, 0.5);
@@ -290,4 +316,60 @@ body {
 
 .toggle input[type="checkbox"] {
   transform: translateY(1px);
+}
+
+.toggle:has(input:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.heatToggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.heatLegend {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1000;
+  pointer-events: none;
+  width: 180px;
+  background: rgba(15, 20, 32, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 12px 30px var(--shadow);
+}
+.heatLegend[hidden] {
+  display: none;
+}
+.heatLegend .legendTitle {
+  font-size: 12px;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.heatLegend .legendBar {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #57106e 8%,
+    #bc3754 22%,
+    #f98e09 45%,
+    #fcffa4 75%
+  );
+}
+.heatLegend .legendLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.heatLegend .legendNote {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
 }
