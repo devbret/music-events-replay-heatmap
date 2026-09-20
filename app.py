@@ -43,7 +43,7 @@ def extract_lat_lng(place: dict):
         return None, None
     try:
         return round(float(lat), 5), round(float(lng), 5)
-    except Exception:
+    except (TypeError, ValueError):
         return None, None
 
 
