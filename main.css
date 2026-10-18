@@ -278,6 +278,11 @@ body {
   overflow: visible;
 }
 
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) saturate(0.55) brightness(0.85)
+    contrast(0.95);
+}
+
 .leaflet-heatmap-layer {
   opacity: 0.65;
 }
